@@ -31,7 +31,6 @@ async function incubateSyntheticPersona(context) {
     await page.mouse.wheel(0, Math.floor(Math.random() * 250) + 50);
     await new Promise((r) => setTimeout(r, 1200));
   } catch (e) {
-    // Silent recovery
   } finally {
     await page.close();
   }
@@ -66,20 +65,25 @@ async function simulateNeuromorphicTremor(page, profile) {
 }
 
 async function executeEnterpriseNode(config) {
-  const { taskId, targetUrl, proxyServer, cognitiveProfile, retryCount = 0 } = config;
+  const taskId = config.taskId;
+  const targetUrl = config.targetUrl;
+  const proxyServer = config.proxyServer;
+  const cognitiveProfile = config.cognitiveProfile;
+  const retryCount = config.retryCount || 0;
   const maxRetries = 2;
+
   const executionLog = {
-    taskId,
+    taskId: taskId,
     success: false,
     timestamp: new Date().toISOString(),
     proxyUsed: proxyServer || 'Direct-Local-IP',
     profile: cognitiveProfile
   };
 
-  console.log(\n🌌 [Node #${taskId} | Attempt ${retryCount + 1} | Profile: ${cognitiveProfile}] Initializing Resilient Node...);
+  console.log("\n🌌 [Node #" + taskId + " | Attempt " + (retryCount + 1) + " | Profile: " + cognitiveProfile + "] Initializing Resilient Node...");
 
   const profile = generatePolymorphicSilicon();
-  const userDataDir = path.join(process.cwd(), session_profile_${taskId}_${Date.now()}_${Math.floor(Math.random() * 1000)});
+  const userDataDir = path.join(process.cwd(), "session_profile_" + taskId + "" + Date.now() + "" + Math.floor(Math.random() * 1000));
 
   const launchOptions = {
     headless: true,
@@ -93,37 +97,42 @@ async function executeEnterpriseNode(config) {
       '--force-webrtc-ip-handling-policy=disable_non_proxied_udp',
       '--disable-webrtc-hw-decoding',
       '--disable-webrtc-hw-encoding',
-      --window-size=${1920 + Math.floor(Math.random() * 40)},${1080 + Math.floor(Math.random() * 20)}
+      '--window-size=' + (1920 + Math.floor(Math.random() * 40)) + ',' + (1080 + Math.floor(Math.random() * 20))
     ]
   };
 
   if (proxyServer && proxyServer.trim() !== '') {
     launchOptions.proxy = { server: proxyServer.trim() };
-    console.log(🛡️ [Node #${taskId}] Routing securely through proxy: ${proxyServer});
+    console.log("🛡️ [Node #" + taskId + "] Routing securely through proxy: " + proxyServer);
   }
 
   const context = await chromium.launchPersistentContext(userDataDir, launchOptions);
 
   try {
-    const page = context.pages()[0] || await context.newPage();
+    const pages = context.pages();
+    const page = pages.length > 0 ? pages[0] : await context.newPage();
     await context.setViewportSize({ width: 1920, height: 1080 });
 
-    await page.addInitScript((p) => {
-      Object.defineProperty(navigator, 'platform', { get: () => p.platform });
-      Object.defineProperty(navigator, 'hardwareConcurrency', { get: () => p.hardwareConcurrency });
-      Object.defineProperty(navigator, 'deviceMemory', { get: () => p.deviceMemory });
-      Object.defineProperty(navigator, 'webdriver', { get: () => undefined });
+    await page.addInitScript(function(p) {
+      Object.defineProperty(navigator, 'platform', { get: function() { return p.platform; } });
+      Object.defineProperty(navigator, 'hardwareConcurrency', { get: function() { return p.hardwareConcurrency; } });
+      Object.defineProperty(navigator, 'deviceMemory', { get: function() { return p.deviceMemory; } });
+      Object.defineProperty(navigator, 'webdriver', { get: function() { return undefined; } });
 
       if (window.RTCPeerConnection) {
-        const OrigRTC = window.RTCPeerConnection;
-        window.RTCPeerConnection = function(...args) {
-          const pc = new OrigRTC(...args);
-          pc.createOffer = () => Promise.reject(new Error('WebRTC disabled for privacy'));
+        var OrigRTC = window.RTCPeerConnection;
+        window.RTCPeerConnection = function() {
+          var args = [];
+          for (var _i = 0; _i < arguments.length; _i++) {
+            args[_i] = arguments[_i];
+          }
+          var pc = new (Function.prototype.bind.apply(OrigRTC, [null].concat(args)))();
+          pc.createOffer = function() { return Promise.reject(new Error('WebRTC disabled for privacy')); };
           return pc;
         };
       }
 
-      const getParameterProxyHandler = {
+      var getParameterProxyHandler = {
         apply: function (target, ctx, args) {
           if (args[0] === 37445) return 'Google Inc. (NVIDIA)';
           if (args[0] === 37446) return p.renderer;
@@ -131,15 +140,15 @@ async function executeEnterpriseNode(config) {
         }
       };
       try {
-        const dbg = WebGLRenderingContext.prototype.getParameter;
+        var dbg = WebGLRenderingContext.prototype.getParameter;
         WebGLRenderingContext.prototype.getParameter = new Proxy(dbg, getParameterProxyHandler);
       } catch (e) {}
 
-      const originalGetContext = HTMLCanvasElement.prototype.getContext;
+      var originalGetContext = HTMLCanvasElement.prototype.getContext;
       HTMLCanvasElement.prototype.getContext = function (type, attrs) {
-        const ctx = originalGetContext.call(this, type, attrs);
+        var ctx = originalGetContext.call(this, type, attrs);
         if (type === '2d' && ctx) {
-          const originalFillText = ctx.fillText;
+          var originalFillText = ctx.fillText;
           ctx.fillText = function (text, x, y, maxWidth) {
             return originalFillText.call(this, text, x + p.canvasNoise, y, maxWidth);
           };
@@ -150,38 +159,44 @@ async function executeEnterpriseNode(config) {
 
     await incubateSyntheticPersona(context);
 
-    console.log(🎯 [Node #${taskId}] Navigating securely to target payload...);
+    console.log("🎯 [Node #" + taskId + "] Navigating securely to target payload...");
     await page.goto(targetUrl, { waitUntil: 'domcontentloaded', timeout: 60000 });
 
     await triggerVideoPlayback(page);
 
-    console.log(⏳ [Node #${taskId}] Simulating human retention & video watch...);
+    console.log("⏳ [Node #" + taskId + "] Simulating human retention & video watch...");
     await simulateNeuromorphicTremor(page, cognitiveProfile);
 
-    const watchTime = Math.floor(Math.random() * (50 - 30 + 1)) + 30;
-    for (let i = 0; i < watchTime; i += 5) {
-      await new Promise((r) => setTimeout(r, 5000));
+    var watchTime = Math.floor(Math.random() * (50 - 30 + 1)) + 30;
+    for (var i = 0; i < watchTime; i += 5) {
+      await new Promise(function(r) { setTimeout(r, 5000); });
       await triggerVideoPlayback(page);
       if (Math.random() > 0.3) {
         await page.mouse.wheel(0, Math.floor(Math.random() * 180) - 90);
       }
     }
 
-    console.log(✅ [Node #${taskId}] View successfully executed under Resilient Shield! 🛡️✨);
+    console.log("✅ [Node #" + taskId + "] View successfully executed under Resilient Shield! 🛡️✨");
     executionLog.success = true;
     await context.close();
     try { fs.rmSync(userDataDir, { recursive: true, force: true }); } catch (e) {}
     return executionLog;
 
   } catch (error) {
-    console.error(❌ [Node #${taskId}] Anomaly encountered:, error);
+    console.error("❌ [Node #" + taskId + "] Anomaly encountered:", error);
     await context.close();
     try { fs.rmSync(userDataDir, { recursive: true, force: true }); } catch (e) {}
 
     if (retryCount < maxRetries) {
-      console.log(🔄 [Node #${taskId}] Self-Healing Triggered: Automatically retrying with fresh DNA (Attempt ${retryCount + 2}/${maxRetries + 1})...);
-      await new Promise((r) => setTimeout(r, 3000));
-      return executeEnterpriseNode({ ...config, retryCount: retryCount + 1 });
+      console.log("🔄 [Node #" + taskId + "] Self-Healing Triggered: Automatically retrying with fresh DNA...");
+      await new Promise(function(r) { setTimeout(r, 3000); });
+      return executeEnterpriseNode({
+        taskId: taskId,
+        targetUrl: targetUrl,
+        proxyServer: proxyServer,
+        cognitiveProfile: cognitiveProfile,
+        retryCount: retryCount + 1
+      });
     }
 
     executionLog.success = false;
@@ -190,52 +205,57 @@ async function executeEnterpriseNode(config) {
 }
 
 async function runEnterpriseEngine(targetUrl, totalViews, concurrency, proxies) {
-  console.log(\n==================================================);
-  console.log(🚀 RESILIENT CENTURY-PROOF ENGINE (LEVEL 16));
-  console.log(🎯 Target URL: ${targetUrl});
-  console.log(📊 Target Volume: ${totalViews} Views);
-  console.log(⚡ Concurrent Streams: ${concurrency});
-  console.log(🌐 Proxy Pool Size: ${proxies.length} Loaded);
-  console.log(==================================================\n);
+  console.log("\n==================================================");
+  console.log("🚀 RESILIENT CENTURY-PROOF ENGINE (LEVEL 16 - FULL)");
+  console.log("🎯 Target URL: " + targetUrl);
+  console.log("📊 Target Volume: " + totalViews + " Views");
+  console.log("⚡ Concurrent Streams: " + concurrency);
+  console.log("==================================================\n");
 
-  let completedViews = 0;
-  let taskIdCounter = 1;
-  const allLogs = [];
-  const profiles = ['impulsive', 'relaxed', 'analytical'];
+  var completedViews = 0;
+  var taskIdCounter = 1;
+  var allLogs = [];
+  var profiles = ['impulsive', 'relaxed', 'analytical'];
 
   while (completedViews < totalViews) {
-    const batch = [];
+    var batch = [];
 
-    for (let i = 0; i < concurrency && taskIdCounter <= totalViews; i++) {
-      const taskId = taskIdCounter++;
-      const cognitiveProfile = profiles[Math.floor(Math.random() * profiles.length)];
-      const proxyServer = proxies.length > 0 ? proxies[(taskId - 1) % proxies.length] : undefined;
+    for (var i = 0; i < concurrency && taskIdCounter <= totalViews; i++) {
+      var taskId = taskIdCounter++;
+      var cognitiveProfile = profiles[Math.floor(Math.random() * profiles.length)];
+      var proxyServer = proxies.length > 0 ? proxies[(taskId - 1) % proxies.length] : undefined;
 
-      batch.push(executeEnterpriseNode({ taskId, targetUrl, proxyServer, cognitiveProfile }));
+      batch.push(executeEnterpriseNode({
+        taskId: taskId,
+        targetUrl: targetUrl,
+        proxyServer: proxyServer,
+        cognitiveProfile: cognitiveProfile
+      }));
     }
 
-    const results = await Promise.all(batch);
-    for (const res of results) {
+    var results = await Promise.all(batch);
+    for (var j = 0; j < results.length; j++) {
+      var res = results[j];
       allLogs.push(res);
       if (res.success) completedViews++;
     }
 
-    console.log(📈 Progress Report: ${completedViews}/${totalViews} Resilient views registered.);
-    await new Promise((r) => setTimeout(r, 4000));
+    console.log("📈 Progress Report: " + completedViews + "/" + totalViews + " Resilient views registered.");
+    await new Promise(function(r) { setTimeout(r, 4000); });
   }
 
-  const reportPath = path.join(process.cwd(), 'execution_report.json');
-  fs.writeFileSync(reportPath, JSON.stringify({ totalViews, completedViews, timestamp: new Date().toISOString(), logs: allLogs }, null, 2));
+  var reportPath = path.join(process.cwd(), 'execution_report.json');
+  fs.writeFileSync(reportPath, JSON.stringify({ totalViews: totalViews, completedViews: completedViews, timestamp: new Date().toISOString(), logs: allLogs }, null, 2));
 
-  console.log(\n🎉 MISSION ACCOMPLISHED! All ${totalViews} views executed.);
-  console.log(📊 Analytics Report successfully saved at: ${reportPath});
+  console.log("\n🎉 MISSION ACCOMPLISHED! All " + totalViews + " views executed.");
+  console.log("📊 Analytics Report successfully saved at: " + reportPath);
 }
 
 async function startDashboard() {
-  const targetUrl = process.env.TARGET_URL || 'https://www.example.com';
-  const totalViews = parseInt(process.env.TOTAL_VIEWS, 10) || 10;
-  const concurrency = parseInt(process.env.CONCURRENCY, 10) || 3;
-  const proxies = process.env.PROXIES ? process.env.PROXIES.split(',').map(p => p.trim()) : [];
+  var targetUrl = process.env.TARGET_URL || 'https://www.example.com';
+  var totalViews = parseInt(process.env.TOTAL_VIEWS, 10) || 10;
+  var concurrency = parseInt(process.env.CONCURRENCY, 10) || 3;
+  var proxies = process.env.PROXIES ? process.env.PROXIES.split(',').map(function(p) { return p.trim(); }) : [];
 
   await runEnterpriseEngine(targetUrl, totalViews, concurrency, proxies);
 }
