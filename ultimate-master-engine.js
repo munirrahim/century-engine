@@ -1,31 +1,10 @@
-import { chromium, BrowserContext, Page } from 'playwright-extra';
-import stealth from 'puppeteer-extra-plugin-stealth';
-import * as readline from 'readline/promises';
-import { stdin as input, stdout as output } from 'process';
-import * as fs from 'fs';
-import * as path from 'path';
+const { chromium } = require('playwright-extra');
+const stealth = require('puppeteer-extra-plugin-stealth');
+const fs = require('fs');
+const path = require('path');
 
 chromium.use(stealth());
 
-interface EnterpriseTaskConfig {
-  taskId: number;
-  targetUrl: string;
-  proxyServer?: string;
-  cognitiveProfile: 'impulsive' | 'relaxed' | 'analytical';
-  retryCount?: number;
-}
-
-interface ExecutionResult {
-  taskId: number;
-  success: boolean;
-  timestamp: string;
-  proxyUsed: string;
-  profile: string;
-}
-
-/**
- * 1. پولی مورفک ہارڈویئر اور سلیکون فنگر پرنٹ میٹرکس
- */
 function generatePolymorphicSilicon() {
   const platforms = ['Win32', 'MacIntel', 'Linux x86_64'];
   const renderers = [
@@ -43,10 +22,7 @@ function generatePolymorphicSilicon() {
   };
 }
 
-/**
- * 2. سنیتھیک پرسنہ انکیوبیشن
- */
-async function incubateSyntheticPersona(context: BrowserContext) {
+async function incubateSyntheticPersona(context) {
   const page = await context.newPage();
   try {
     console.log("🧬 [Persona Engine] Incubating clean synthetic digital identity & cookies...");
@@ -55,16 +31,13 @@ async function incubateSyntheticPersona(context: BrowserContext) {
     await page.mouse.wheel(0, Math.floor(Math.random() * 250) + 50);
     await new Promise((r) => setTimeout(r, 1200));
   } catch (e) {
-    // سائلنٹلی ہینڈل
+    // Silent recovery
   } finally {
     await page.close();
   }
 }
 
-/**
- * 3. ویڈیو پلیئر DOM آٹو پلے اور انمیوٹ ٹرگر
- */
-async function triggerVideoPlayback(page: Page) {
+async function triggerVideoPlayback(page) {
   try {
     await page.evaluate(() => {
       const videos = document.querySelectorAll('video');
@@ -75,15 +48,12 @@ async function triggerVideoPlayback(page: Page) {
       });
 
       const playButtons = document.querySelectorAll('.ytp-play-button, button[aria-label*="Play"], .play-button, [data-testid="play-button"]');
-      playButtons.forEach((btn) => (btn as HTMLElement).click());
+      playButtons.forEach((btn) => btn.click());
     });
   } catch (e) {}
 }
 
-/**
- * 4. نیورومارفک بائیو-مائیکرو جیٹر & فٹیگ سیمولیشن
- */
-async function simulateNeuromorphicTremor(page: Page, profile: string) {
+async function simulateNeuromorphicTremor(page, profile) {
   const fatigueMultiplier = profile === 'relaxed' ? 1.4 : profile === 'analytical' ? 1.8 : 0.8;
   const baseDelay = Math.floor(Math.random() * 1200) + 600;
 
@@ -95,13 +65,10 @@ async function simulateNeuromorphicTremor(page: Page, profile: string) {
   }
 }
 
-/**
- * 5. ماسٹر انٹرپرائز نوڈ ایگزیکیوشن (WebRTC لیک شیلڈ اور سمارٹ ری ٹرائی کے ساتھ)
- */
-async function executeEnterpriseNode(config: EnterpriseTaskConfig): Promise<ExecutionResult> {
+async function executeEnterpriseNode(config) {
   const { taskId, targetUrl, proxyServer, cognitiveProfile, retryCount = 0 } = config;
   const maxRetries = 2;
-  const executionLog: ExecutionResult = {
+  const executionLog = {
     taskId,
     success: false,
     timestamp: new Date().toISOString(),
@@ -114,7 +81,7 @@ async function executeEnterpriseNode(config: EnterpriseTaskConfig): Promise<Exec
   const profile = generatePolymorphicSilicon();
   const userDataDir = path.join(process.cwd(), session_profile_${taskId}_${Date.now()}_${Math.floor(Math.random() * 1000)});
 
-  const launchOptions: any = {
+  const launchOptions = {
     headless: true,
     args: [
       '--disable-blink-features=AutomationControlled',
@@ -123,7 +90,6 @@ async function executeEnterpriseNode(config: EnterpriseTaskConfig): Promise<Exec
       '--no-sandbox',
       '--disable-setuid-sandbox',
       '--disable-dev-shm-usage',
-      // WebRTC IP Leak Prevention Flags
       '--force-webrtc-ip-handling-policy=disable_non_proxied_udp',
       '--disable-webrtc-hw-decoding',
       '--disable-webrtc-hw-encoding',
@@ -142,17 +108,15 @@ async function executeEnterpriseNode(config: EnterpriseTaskConfig): Promise<Exec
     const page = context.pages()[0] || await context.newPage();
     await context.setViewportSize({ width: 1920, height: 1080 });
 
-    // WebRTC API masking & V8/Canvas Spoofing
     await page.addInitScript((p) => {
       Object.defineProperty(navigator, 'platform', { get: () => p.platform });
       Object.defineProperty(navigator, 'hardwareConcurrency', { get: () => p.hardwareConcurrency });
       Object.defineProperty(navigator, 'deviceMemory', { get: () => p.deviceMemory });
       Object.defineProperty(navigator, 'webdriver', { get: () => undefined });
 
-      // Disable WebRTC leaks at JS level
-      if ((window as any).RTCPeerConnection) {
-        const OrigRTC = (window as any).RTCPeerConnection;
-        (window as any).RTCPeerConnection = function(...args: any[]) {
+      if (window.RTCPeerConnection) {
+        const OrigRTC = window.RTCPeerConnection;
+        window.RTCPeerConnection = function(...args) {
           const pc = new OrigRTC(...args);
           pc.createOffer = () => Promise.reject(new Error('WebRTC disabled for privacy'));
           return pc;
@@ -160,7 +124,7 @@ async function executeEnterpriseNode(config: EnterpriseTaskConfig): Promise<Exec
       }
 
       const getParameterProxyHandler = {
-        apply: function (target: any, ctx: any, args: any[]) {
+        apply: function (target, ctx, args) {
           if (args[0] === 37445) return 'Google Inc. (NVIDIA)';
           if (args[0] === 37446) return p.renderer;
           return Reflect.apply(target, ctx, args);
@@ -172,11 +136,11 @@ async function executeEnterpriseNode(config: EnterpriseTaskConfig): Promise<Exec
       } catch (e) {}
 
       const originalGetContext = HTMLCanvasElement.prototype.getContext;
-      (HTMLCanvasElement.prototype.getContext as any) = function (type: string, attrs?: any) {
+      HTMLCanvasElement.prototype.getContext = function (type, attrs) {
         const ctx = originalGetContext.call(this, type, attrs);
         if (type === '2d' && ctx) {
           const originalFillText = ctx.fillText;
-          ctx.fillText = function (text: string, x: number, y: number, maxWidth?: number) {
+          ctx.fillText = function (text, x, y, maxWidth) {
             return originalFillText.call(this, text, x + p.canvasNoise, y, maxWidth);
           };
         }
@@ -214,7 +178,6 @@ async function executeEnterpriseNode(config: EnterpriseTaskConfig): Promise<Exec
     await context.close();
     try { fs.rmSync(userDataDir, { recursive: true, force: true }); } catch (e) {}
 
-    // Smart Auto-Retry Mechanism
     if (retryCount < maxRetries) {
       console.log(🔄 [Node #${taskId}] Self-Healing Triggered: Automatically retrying with fresh DNA (Attempt ${retryCount + 2}/${maxRetries + 1})...);
       await new Promise((r) => setTimeout(r, 3000));
@@ -226,10 +189,7 @@ async function executeEnterpriseNode(config: EnterpriseTaskConfig): Promise<Exec
   }
 }
 
-/**
- * 6. ماسٹر لوکل کنکرেন্সি انجن اور رپورٹ جنریٹر
- */
-async function runEnterpriseEngine(targetUrl: string, totalViews: number, concurrency: number, proxies: string[]) {
+async function runEnterpriseEngine(targetUrl, totalViews, concurrency, proxies) {
   console.log(\n==================================================);
   console.log(🚀 RESILIENT CENTURY-PROOF ENGINE (LEVEL 16));
   console.log(🎯 Target URL: ${targetUrl});
@@ -240,11 +200,11 @@ async function runEnterpriseEngine(targetUrl: string, totalViews: number, concur
 
   let completedViews = 0;
   let taskIdCounter = 1;
-  const allLogs: ExecutionResult[] = [];
-  const profiles: ('impulsive' | 'relaxed' | 'analytical')[] = ['impulsive', 'relaxed', 'analytical'];
+  const allLogs = [];
+  const profiles = ['impulsive', 'relaxed', 'analytical'];
 
   while (completedViews < totalViews) {
-    const batch: Promise<ExecutionResult>[] = [];
+    const batch = [];
 
     for (let i = 0; i < concurrency && taskIdCounter <= totalViews; i++) {
       const taskId = taskIdCounter++;
@@ -264,7 +224,6 @@ async function runEnterpriseEngine(targetUrl: string, totalViews: number, concur
     await new Promise((r) => setTimeout(r, 4000));
   }
 
-  // ایگزیکیوشن اینالیٹکس رپورٹ (JSON Export)
   const reportPath = path.join(process.cwd(), 'execution_report.json');
   fs.writeFileSync(reportPath, JSON.stringify({ totalViews, completedViews, timestamp: new Date().toISOString(), logs: allLogs }, null, 2));
 
@@ -272,43 +231,13 @@ async function runEnterpriseEngine(targetUrl: string, totalViews: number, concur
   console.log(📊 Analytics Report successfully saved at: ${reportPath});
 }
 
-/**
- * 7. انٹرایکٹو ٹرمینل ڈیش بورڈ
- */
 async function startDashboard() {
-  const rl = readline.createInterface({ input, output });
+  const targetUrl = process.env.TARGET_URL || 'https://www.example.com';
+  const totalViews = parseInt(process.env.TOTAL_VIEWS, 10) || 10;
+  const concurrency = parseInt(process.env.CONCURRENCY, 10) || 3;
+  const proxies = process.env.PROXIES ? process.env.PROXIES.split(',').map(p => p.trim()) : [];
 
-  console.clear();
-  console.log(==================================================);
-  console.log(🌟 RESILIENT OMNIVERSAL DASHBOARD (LEVEL 16) 🌟);
-  console.log(==================================================\n);
-
-  try {
-    const targetUrl = await rl.question('🔗 Enter Target URL (Video/Post Link): ');
-    const viewsInput = await rl.question('📊 Enter Total Views Required (e.g. 50): ');
-    const concurrencyInput = await rl.question('⚡ Enter Concurrency Streams (e.g. 3): ');
-    const proxyInput = await rl.question('🌐 Enter Proxies separated by comma (Leave blank for direct local IP): ');
-
-    rl.close();
-
-    const totalViews = parseInt(viewsInput, 10) || 10;
-    const concurrency = parseInt(concurrencyInput, 10) || 3;
-    const proxies = proxyInput.trim() ? proxyInput.split(',').map(p => p.trim()) : [];
-
-    if (!targetUrl.startsWith('http')) {
-      console.log('❌ Invalid URL! Please make sure it starts with http:// or https://');
-      return;
-    }
-
-    await runEnterpriseEngine(targetUrl, totalViews, concurrency, proxies);
-
-  } catch (error) {
-    console.error('❌ Dashboard Error:', error);
-    rl.close();
-  }
+  await runEnterpriseEngine(targetUrl, totalViews, concurrency, proxies);
 }
 
-// ڈیش بورڈ ایگزیکیوشن پوائنٹ
-if (require.main === module) {
-  startDashboard();
-}
+startDashboard();
