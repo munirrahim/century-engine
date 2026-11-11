@@ -1,0 +1,15 @@
+{
+  "name": "century-engine",
+  "version": "1.0.0",
+  "description": "Level 16 Century-Proof Automation Engine",
+  "main": "ultimate-master-engine.ts",
+  "scripts": {
+    "start": "ts-node ultimate-master-engine.ts"
+  },
+  "dependencies": {
+    "playwright-extra": "^4.3.6",
+    "puppeteer-extra-plugin-stealth": "^2.11.2",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.3.3"
+  }
+}
